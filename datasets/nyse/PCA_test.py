@@ -5,33 +5,18 @@ from sklearn.preprocessing import StandardScaler
 
 
 
-df=pd.read_csv("OP_NYSE.csv"); #Removes all non numeric columns from the data frame
+df=pd.read_csv("OP_NYSE.csv"); #Removes all non numeric columns from the data frame after importing the data
 df=df.loc[:, df.columns != 'Unnamed: 0.1'];
 df=df.loc[:, df.columns != 'Ticker Symbol'];
 df=df.loc[:, df.columns != 'Period Ending'];
 df=df.loc[:, df.columns != 'GICS Sector'];
 df=df.loc[:, df.columns != 'GICS Sub Industry'];
 
-df=df.dropna(axis='rows');
+df=df.dropna(axis='rows'); #drops all rows without full aet of data may need to revise in the future.
 
-open_array=df["Open"].values #find the values in of the pricing categories
-close_array=df["Close"].values
-low_array=df["Low"].values;
-high_array=df["High"].values;
+columns=df.columns #
 
-
-average_array=np.add(open_array,close_array); #adds the array together and takes their average
-average_array=np.add(average_array,low_array);
-average_array=np.add(average_array,high_array);
-average_array=average_array/4;
-
-
-columns=df.columns
-
-
-
-
-x = StandardScaler().fit_transform(df);
+x = StandardScaler().fit_transform(df); #standardizes data
 
 
 
@@ -39,57 +24,28 @@ x = StandardScaler().fit_transform(df);
 
 
 
-pca=PCA(n_components=3);
-pca.fit(df);
+pca=PCA(n_components=30); #uses 3 components
 
-array=pca.fit_transform(df);
-#print(array[:,0]);
+array=pca.fit_transform(df); #Finds the values along each dimension
 
 
+def print_axis_correlations(df,array,index):
+	test_map={};
+	for i in range(len(columns)):
+		test_array=df[columns[i]]; #Finds the values for the specified factor
+		correlation=np.corrcoef(test_array,array[:,index])[1,0]; #calculates to the  correlation coefficient between a specific factor and component axis
+		test_map[columns[i]]=correlation; #Stores the vale along with factor name in a hash map
 
 
-test_map={};
-for i in range(len(columns)):
-	test_array=df[columns[i]]; #Finds the values for the specified factor
-	correlation=np.corrcoef(test_array,array[:,0])[1,0]; #calculates to the  correlation coefficient between a specific factor and the average of prices
-	test_map[columns[i]]=correlation; #Stores the vale along with factor name in a hash map
+	sorted_by_value = sorted(test_map.items(), key=lambda kv: kv[1]); #Sorted the hash map by value;
+
+	for key,value in sorted_by_value: # prints test_map out
+		if(value>=.3 or value<= -0.3):
+			print(key,value);
+	print("\n");
 
 
-sorted_by_value = sorted(test_map.items(), key=lambda kv: kv[1]); #Sorteds the hash map by value;
+for i in range(30): #prints for each component axis
+	print("Principal Component Axis:",str(i));
+	print_axis_correlations(df,array,i);
 
-for key,value in sorted_by_value: # prints test_map out
-	if(value>=.5 or value<= -0.5):
-		print(key,value);
-
-print("\n");
-
-test_map={};
-for i in range(len(columns)):
-	test_array=df[columns[i]]; #Finds the values for the specified factor
-	correlation=np.corrcoef(test_array,array[:,1])[1,0]; #calculates to the  correlation coefficient between a specific factor and the average of prices
-	test_map[columns[i]]=correlation; #Stores the vale along with factor name in a hash map
-
-
-sorted_by_value = sorted(test_map.items(), key=lambda kv: kv[1]); #Sorteds the hash map by value;
-
-for key,value in sorted_by_value: # prints test_map out
-	if(value>=.5 or value<= -0.5):
-		print(key,value);
-
-#print(pca.explained_variance_ratio_);
-
-
-test_map={};
-for i in range(len(columns)):
-	test_array=df[columns[i]]; #Finds the values for the specified factor
-	correlation=np.corrcoef(test_array,array[:,2])[1,0]; #calculates to the  correlation coefficient between a specific factor and the average of prices
-	test_map[columns[i]]=correlation; #Stores the vale along with factor name in a hash map
-
-
-sorted_by_value = sorted(test_map.items(), key=lambda kv: kv[1]); #Sorteds the hash map by value;
-print();
-for key,value in sorted_by_value: # prints test_map out
-	if(value>=.5 or value<= -0.5):
-		print(key,value);
-
-#print(pca.explained_variance_ratio_);
